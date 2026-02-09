@@ -1,0 +1,30 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+venv/
+env/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Docs
+*.md
+README*
+LICENSE
+
+# Logs
+*.log
+
+# Tests
+tests/
