@@ -1,0 +1,29 @@
+# Dockerfile - Build da Imagem da API
+# Versão comentada para estudo
+
+# Imagem base oficial do Python
+# slim = versão reduzida (sem pacotes desnecessários)
+FROM python:3.11-slim
+
+# Diretório de trabalho dentro do container
+WORKDIR /app
+
+# Copia apenas requirements.txt primeiro
+# Aproveita cache do Docker: se requirements não mudar, esta layer é reusada
+COPY requirements.txt .
+
+# Instala dependências Python
+# --no-cache-dir reduz tamanho da imagem (não guarda cache do pip)
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copia código da aplicação
+# Feito depois para aproveitar cache das dependências
+COPY app.py .
+
+# Documenta porta que a aplicação usa
+# Não abre a porta, apenas informa (docker compose faz isso)
+EXPOSE 8000
+
+# Comando executado quando container inicia
+# Lista Python: ["executavel", "arg1", "arg2"]
+CMD ["python", "app.py"]

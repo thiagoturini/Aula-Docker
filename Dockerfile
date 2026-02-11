@@ -18,3 +18,4 @@ EXPOSE 8000
 
 # Comando para iniciar
 CMD ["python", "app.py"]
+

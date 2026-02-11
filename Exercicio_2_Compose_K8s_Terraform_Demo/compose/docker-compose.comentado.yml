@@ -1,0 +1,64 @@
+# Docker Compose - Orquestração Multi-Container
+# Versão comentada para estudo
+
+services:
+  # ===== BANCO DE DADOS =====
+  db:
+    image: postgres:15-alpine
+    container_name: filmes-postgres
+    
+    # Variáveis de ambiente para configurar o PostgreSQL
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: filmesdb
+    
+    # Volume nomeado - dados persistem mesmo após container ser deletado
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    
+    # Porta exposta: host:container
+    ports:
+      - "5432:5432"
+    
+    # Healthcheck - verifica se banco está pronto para conexões
+    # pg_isready retorna 0 quando banco aceita conexões
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    
+    # Reinicia automaticamente, exceto se parado manualmente
+    restart: unless-stopped
+
+  # ===== API =====
+  api:
+    # Build da imagem a partir do Dockerfile em ../api
+    build:
+      context: ../api
+      dockerfile: Dockerfile
+    
+    container_name: filmes-api
+    
+    # DATABASE_URL usa hostname 'db' (nome do serviço)
+    # Compose cria rede interna onde containers se comunicam por hostname
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/filmesdb
+      PYTHONUNBUFFERED: 1  # Logs aparecem em tempo real
+    
+    ports:
+      - "8000:8000"
+    
+    # Aguarda até banco passar no healthcheck antes de iniciar
+    # Sem isso, API tentaria conectar antes do banco estar pronto
+    depends_on:
+      db:
+        condition: service_healthy
+    
+    restart: unless-stopped
+
+# Volume nomeado - dados ficam em /var/lib/docker/volumes/
+# Para ver: docker volume inspect compose_postgres_data
+volumes:
+  postgres_data:
